@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as CardRouteImport } from './routes/card'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnvelopeIdRouteImport } from './routes/envelope.$id'
 
+const SubscriptionsRoute = SubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CardRoute = CardRouteImport.update({
   id: '/card',
   path: '/card',
@@ -32,35 +38,46 @@ const EnvelopeIdRoute = EnvelopeIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/card' | '/envelope/$id'
+  fullPaths: '/' | '/card' | '/subscriptions' | '/envelope/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/card' | '/envelope/$id'
-  id: '__root__' | '/' | '/card' | '/envelope/$id'
+  to: '/' | '/card' | '/subscriptions' | '/envelope/$id'
+  id: '__root__' | '/' | '/card' | '/subscriptions' | '/envelope/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardRoute: typeof CardRoute
+  SubscriptionsRoute: typeof SubscriptionsRoute
   EnvelopeIdRoute: typeof EnvelopeIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subscriptions': {
+      id: '/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof SubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/card': {
       id: '/card'
       path: '/card'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardRoute: CardRoute,
+  SubscriptionsRoute: SubscriptionsRoute,
   EnvelopeIdRoute: EnvelopeIdRoute,
 }
 export const routeTree = rootRouteImport
