@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as FundRouteImport } from './routes/fund'
+import { Route as DeclineRouteImport } from './routes/decline'
 import { Route as CardRouteImport } from './routes/card'
 import { Route as AllocateRouteImport } from './routes/allocate'
 import { Route as IndexRouteImport } from './routes/index'
@@ -30,6 +31,11 @@ const GoalsRoute = GoalsRouteImport.update({
 const FundRoute = FundRouteImport.update({
   id: '/fund',
   path: '/fund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeclineRoute = DeclineRouteImport.update({
+  id: '/decline',
+  path: '/decline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CardRoute = CardRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/allocate'
     | '/card'
+    | '/decline'
     | '/fund'
     | '/goals'
     | '/subscriptions'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/allocate'
     | '/card'
+    | '/decline'
     | '/fund'
     | '/goals'
     | '/subscriptions'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/allocate'
     | '/card'
+    | '/decline'
     | '/fund'
     | '/goals'
     | '/subscriptions'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AllocateRoute: typeof AllocateRoute
   CardRoute: typeof CardRoute
+  DeclineRoute: typeof DeclineRoute
   FundRoute: typeof FundRoute
   GoalsRoute: typeof GoalsRoute
   SubscriptionsRoute: typeof SubscriptionsRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/fund'
       fullPath: '/fund'
       preLoaderRoute: typeof FundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/decline': {
+      id: '/decline'
+      path: '/decline'
+      fullPath: '/decline'
+      preLoaderRoute: typeof DeclineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/card': {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AllocateRoute: AllocateRoute,
   CardRoute: CardRoute,
+  DeclineRoute: DeclineRoute,
   FundRoute: FundRoute,
   GoalsRoute: GoalsRoute,
   SubscriptionsRoute: SubscriptionsRoute,
