@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
+import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as CardRouteImport } from './routes/card'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnvelopeIdRouteImport } from './routes/envelope.$id'
@@ -17,6 +18,11 @@ import { Route as EnvelopeIdRouteImport } from './routes/envelope.$id'
 const SubscriptionsRoute = SubscriptionsRouteImport.update({
   id: '/subscriptions',
   path: '/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoalsRoute = GoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CardRoute = CardRouteImport.update({
@@ -38,12 +44,14 @@ const EnvelopeIdRoute = EnvelopeIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/card': typeof CardRoute
+  '/goals': typeof GoalsRoute
   '/subscriptions': typeof SubscriptionsRoute
   '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/card' | '/subscriptions' | '/envelope/$id'
+  fullPaths: '/' | '/card' | '/goals' | '/subscriptions' | '/envelope/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/card' | '/subscriptions' | '/envelope/$id'
-  id: '__root__' | '/' | '/card' | '/subscriptions' | '/envelope/$id'
+  to: '/' | '/card' | '/goals' | '/subscriptions' | '/envelope/$id'
+  id: '__root__' | '/' | '/card' | '/goals' | '/subscriptions' | '/envelope/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardRoute: typeof CardRoute
+  GoalsRoute: typeof GoalsRoute
   SubscriptionsRoute: typeof SubscriptionsRoute
   EnvelopeIdRoute: typeof EnvelopeIdRoute
 }
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/subscriptions'
       fullPath: '/subscriptions'
       preLoaderRoute: typeof SubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goals': {
+      id: '/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof GoalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/card': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardRoute: CardRoute,
+  GoalsRoute: GoalsRoute,
   SubscriptionsRoute: SubscriptionsRoute,
   EnvelopeIdRoute: EnvelopeIdRoute,
 }
