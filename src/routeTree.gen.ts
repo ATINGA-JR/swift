@@ -13,6 +13,7 @@ import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as FundRouteImport } from './routes/fund'
 import { Route as CardRouteImport } from './routes/card'
+import { Route as AllocateRouteImport } from './routes/allocate'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnvelopeIdRouteImport } from './routes/envelope.$id'
 
@@ -36,6 +37,11 @@ const CardRoute = CardRouteImport.update({
   path: '/card',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AllocateRoute = AllocateRouteImport.update({
+  id: '/allocate',
+  path: '/allocate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const EnvelopeIdRoute = EnvelopeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
   '/card': typeof CardRoute
   '/fund': typeof FundRoute
   '/goals': typeof GoalsRoute
@@ -76,16 +85,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/allocate'
     | '/card'
     | '/fund'
     | '/goals'
     | '/subscriptions'
     | '/envelope/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/card' | '/fund' | '/goals' | '/subscriptions' | '/envelope/$id'
+  to:
+    | '/'
+    | '/allocate'
+    | '/card'
+    | '/fund'
+    | '/goals'
+    | '/subscriptions'
+    | '/envelope/$id'
   id:
     | '__root__'
     | '/'
+    | '/allocate'
     | '/card'
     | '/fund'
     | '/goals'
@@ -95,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AllocateRoute: typeof AllocateRoute
   CardRoute: typeof CardRoute
   FundRoute: typeof FundRoute
   GoalsRoute: typeof GoalsRoute
@@ -132,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/allocate': {
+      id: '/allocate'
+      path: '/allocate'
+      fullPath: '/allocate'
+      preLoaderRoute: typeof AllocateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -151,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AllocateRoute: AllocateRoute,
   CardRoute: CardRoute,
   FundRoute: FundRoute,
   GoalsRoute: GoalsRoute,
