@@ -9,38 +9,175 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
+import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as FundRouteImport } from './routes/fund'
+import { Route as DeclineRouteImport } from './routes/decline'
+import { Route as CardRouteImport } from './routes/card'
+import { Route as AllocateRouteImport } from './routes/allocate'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EnvelopeIdRouteImport } from './routes/envelope.$id'
 
+const SubscriptionsRoute = SubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoalsRoute = GoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FundRoute = FundRouteImport.update({
+  id: '/fund',
+  path: '/fund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeclineRoute = DeclineRouteImport.update({
+  id: '/decline',
+  path: '/decline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardRoute = CardRouteImport.update({
+  id: '/card',
+  path: '/card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AllocateRoute = AllocateRouteImport.update({
+  id: '/allocate',
+  path: '/allocate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnvelopeIdRoute = EnvelopeIdRouteImport.update({
+  id: '/envelope/$id',
+  path: '/envelope/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
+  '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
+  '/fund': typeof FundRoute
+  '/goals': typeof GoalsRoute
+  '/subscriptions': typeof SubscriptionsRoute
+  '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
+  '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
+  '/fund': typeof FundRoute
+  '/goals': typeof GoalsRoute
+  '/subscriptions': typeof SubscriptionsRoute
+  '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/allocate': typeof AllocateRoute
+  '/card': typeof CardRoute
+  '/decline': typeof DeclineRoute
+  '/fund': typeof FundRoute
+  '/goals': typeof GoalsRoute
+  '/subscriptions': typeof SubscriptionsRoute
+  '/envelope/$id': typeof EnvelopeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/allocate'
+    | '/card'
+    | '/decline'
+    | '/fund'
+    | '/goals'
+    | '/subscriptions'
+    | '/envelope/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/allocate'
+    | '/card'
+    | '/decline'
+    | '/fund'
+    | '/goals'
+    | '/subscriptions'
+    | '/envelope/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/allocate'
+    | '/card'
+    | '/decline'
+    | '/fund'
+    | '/goals'
+    | '/subscriptions'
+    | '/envelope/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AllocateRoute: typeof AllocateRoute
+  CardRoute: typeof CardRoute
+  DeclineRoute: typeof DeclineRoute
+  FundRoute: typeof FundRoute
+  GoalsRoute: typeof GoalsRoute
+  SubscriptionsRoute: typeof SubscriptionsRoute
+  EnvelopeIdRoute: typeof EnvelopeIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subscriptions': {
+      id: '/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof SubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goals': {
+      id: '/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fund': {
+      id: '/fund'
+      path: '/fund'
+      fullPath: '/fund'
+      preLoaderRoute: typeof FundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/decline': {
+      id: '/decline'
+      path: '/decline'
+      fullPath: '/decline'
+      preLoaderRoute: typeof DeclineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/card': {
+      id: '/card'
+      path: '/card'
+      fullPath: '/card'
+      preLoaderRoute: typeof CardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/allocate': {
+      id: '/allocate'
+      path: '/allocate'
+      fullPath: '/allocate'
+      preLoaderRoute: typeof AllocateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +185,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/envelope/$id': {
+      id: '/envelope/$id'
+      path: '/envelope/$id'
+      fullPath: '/envelope/$id'
+      preLoaderRoute: typeof EnvelopeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AllocateRoute: AllocateRoute,
+  CardRoute: CardRoute,
+  DeclineRoute: DeclineRoute,
+  FundRoute: FundRoute,
+  GoalsRoute: GoalsRoute,
+  SubscriptionsRoute: SubscriptionsRoute,
+  EnvelopeIdRoute: EnvelopeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

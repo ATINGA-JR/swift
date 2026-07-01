@@ -5,17 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Swift — Quiet emerald banking.
+ * Deep emerald authority + calm zinc paper + naira-serious typography.
  */
 
 @theme inline {
@@ -26,6 +17,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -59,29 +51,54 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-warm: var(--paper-warm);
+  --color-emerald-deep: var(--emerald-deep);
+  --color-emerald-mid: var(--emerald-mid);
+  --color-emerald-soft: var(--emerald-soft);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.75rem;
+  --ink: oklch(0.19 0.01 250);
+  --ink-soft: oklch(0.45 0.01 250);
+  --paper: oklch(0.985 0.003 100);
+  --paper-warm: oklch(0.965 0.006 90);
+  --emerald-deep: oklch(0.34 0.07 165);
+  --emerald-mid: oklch(0.48 0.09 162);
+  --emerald-soft: oklch(0.95 0.04 160);
+  --clay: oklch(0.55 0.11 55);
+  --clay-soft: oklch(0.95 0.04 70);
+  --warning: oklch(0.62 0.14 60);
+  --warning-soft: oklch(0.96 0.04 80);
+  --danger: oklch(0.55 0.20 25);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: var(--ink);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: var(--ink);
+  --primary: var(--emerald-deep);
+  --primary-foreground: oklch(0.985 0.003 100);
+  --secondary: var(--paper-warm);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-warm);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--emerald-soft);
+  --accent-foreground: var(--emerald-deep);
+  --destructive: var(--danger);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.92 0.003 250);
+  --input: oklch(0.92 0.003 250);
+  --ring: var(--emerald-mid);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,5 +157,23 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+@keyframes swift-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@utility animate-decline-shake {
+  animation: swift-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@utility text-naira {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
