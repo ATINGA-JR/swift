@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider, useAuth } from "../lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -137,8 +140,33 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+// Redirects unauthenticated visitors to /login for every route except
+// /login itself. Shows a blank shell for the brief moment session state
+// is resolving, to avoid a flash of protected content.
+function AuthGate() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoginRoute = location.pathname === "/login";
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !isLoginRoute) {
+      navigate({ to: "/login" });
+    }
+  }, [loading, user, isLoginRoute, navigate]);
+
+  if (loading || (!user && !isLoginRoute)) {
+    return <div className="min-h-screen bg-zinc-950" />;
+  }
+
+  // Required: nested routes render here. Removing <Outlet /> breaks all child routes.
+  return <Outlet />;
 }
