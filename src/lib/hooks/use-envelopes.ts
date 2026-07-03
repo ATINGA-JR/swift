@@ -74,7 +74,24 @@ export function useEnvelopes() {
   });
 }
 
-type CreateEnvelopeInput = {
+export function useSetActiveEnvelope() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (envelopeId: string) => {
+      const { error } = await supabase.from("active_envelope").upsert({
+        user_id: user!.id,
+        envelope_id: envelopeId,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["envelopes", user?.id] });
+    },
+  });
+}
   name: string;
   type: EnvelopeType;
   color: Envelope["color"];
