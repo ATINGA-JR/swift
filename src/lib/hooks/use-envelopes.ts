@@ -92,6 +92,7 @@ export function useSetActiveEnvelope() {
     },
   });
 }
+type CreateEnvelopeInput = {
   name: string;
   type: EnvelopeType;
   color: Envelope["color"];
