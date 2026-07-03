@@ -1,32 +1,38 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, Zap, ArrowUpRight, MoreHorizontal } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Zap, ArrowUpRight, MoreHorizontal, Check } from "lucide-react";
+import { naira } from "@/lib/swift-data";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import { envelopeById, naira, txns } from "@/lib/swift-data";
+import { useEnvelopes, useSetActiveEnvelope } from "@/lib/hooks/use-envelopes";
 
 export const Route = createFileRoute("/envelope/$id")({
   component: EnvelopeDetail,
-  loader: ({ params }) => {
-    const env = envelopeById(params.id);
-    if (!env) throw notFound();
-    return { env };
-  },
-  notFoundComponent: () => (
-    <div className="p-10 text-center text-sm text-zinc-500">
-      Envelope not found.
-    </div>
-  ),
-  errorComponent: () => (
-    <div className="p-10 text-center text-sm text-zinc-500">
-      Couldn&apos;t load this envelope.
-    </div>
-  ),
 });
 
 function EnvelopeDetail() {
-  const { env } = Route.useLoaderData();
-  const list = txns.filter((t) => t.envelopeId === env.id);
+  const { id } = Route.useParams();
+  const { data: envelopes, isLoading } = useEnvelopes();
+  const setActive = useSetActiveEnvelope();
+
+  if (isLoading) {
+    return <PhoneShell><div className="p-10 text-center text-sm text-zinc-500">Loading…</div></PhoneShell>;
+  }
+
+  const env = envelopes?.find((e) => e.id === id);
+
+  if (!env) {
+    return (
+      <PhoneShell>
+        <div className="p-10 text-center text-sm text-zinc-500">
+          Envelope not found.
+        </div>
+      </PhoneShell>
+    );
+  }
+
+  // Card transactions aren't wired yet — Sudo card issuance is a later phase.
+  const list: { id: string; merchant: string; amount: number; when: string }[] = [];
   const spent = env.allocated - env.balance;
-  const pct = Math.min(100, (spent / env.allocated) * 100);
+  const pct = env.allocated > 0 ? Math.min(100, (spent / env.allocated) * 100) : 0;
 
   return (
     <PhoneShell>
@@ -76,9 +82,22 @@ function EnvelopeDetail() {
       </div>
 
       <div className="px-6 mt-6 flex gap-3">
-        <button className="flex-1 bg-emerald-deep hover:bg-emerald-mid transition text-emerald-50 py-3.5 rounded-xl text-sm font-medium inline-flex items-center justify-center gap-2">
-          <Zap className="size-4" fill="currentColor" strokeWidth={0} />
-          Activate for card
+        <button
+          onClick={() => setActive.mutate(env.id)}
+          disabled={env.active || setActive.isPending}
+          className="flex-1 bg-emerald-deep hover:bg-emerald-mid transition text-emerald-50 py-3.5 rounded-xl text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-70"
+        >
+          {env.active ? (
+            <>
+              <Check className="size-4" />
+              Active for card
+            </>
+          ) : (
+            <>
+              <Zap className="size-4" fill="currentColor" strokeWidth={0} />
+              {setActive.isPending ? "Activating…" : "Activate for card"}
+            </>
+          )}
         </button>
         <button className="px-4 bg-white ring-1 ring-black/10 rounded-xl text-sm font-medium text-zinc-800">
           <ArrowUpRight className="size-4" />
