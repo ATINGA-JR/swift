@@ -1,22 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Plus, ArrowRight, AlertTriangle } from "lucide-react";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import {
-  colorClass,
-  envelopes,
-  goals,
-  naira,
-  wallet,
-} from "@/lib/swift-data";
+import { NewEnvelopeDialog } from "@/components/swift/NewEnvelopeDialog";
+import { colorClass, naira } from "@/lib/swift-data";
+import { useWallet } from "@/lib/hooks/use-wallet";
+import { useEnvelopes } from "@/lib/hooks/use-envelopes";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const spending = envelopes.filter((e) => e.type === "spending");
-  const subsEnv = envelopes.find((e) => e.id === "subs")!;
+  const { data: wallet, isLoading: walletLoading } = useWallet();
+  const { data: envelopes, isLoading: envelopesLoading } = useEnvelopes();
+  const [newOpen, setNewOpen] = useState(false);
+
+  const spending = (envelopes ?? []).filter((e) => e.type === "spending");
+  const goals = (envelopes ?? []).filter((e) => e.type === "goal");
+  const subsEnv = (envelopes ?? []).find((e) => e.type === "subscription");
+
+  const totalBalance = wallet?.balanceNaira ?? 0;
+  const assignedTotal = (envelopes ?? []).reduce((sum, e) => sum + e.balance, 0);
+  const availableToAssign = Math.max(0, totalBalance - assignedTotal);
+
+  const loading = walletLoading || envelopesLoading;
+
   return (
     <PhoneShell>
       <header className="pt-12 px-6 pb-10 bg-zinc-950 text-zinc-50 relative overflow-hidden">
@@ -27,7 +37,7 @@ function Index() {
               Total Balance
             </p>
             <h1 className="text-[40px] font-medium leading-none text-naira">
-              {naira(wallet.total)}
+              {loading ? "—" : naira(totalBalance)}
               <span className="text-zinc-500 text-2xl">.00</span>
             </h1>
           </div>
@@ -41,7 +51,7 @@ function Index() {
         >
           <span className="size-1.5 rounded-full bg-emerald-400" />
           <span className="text-xs font-medium text-emerald-50 text-naira">
-            {naira(wallet.available)} available to assign
+            {loading ? "—" : `${naira(availableToAssign)} available to assign`}
           </span>
           <ArrowRight className="size-3 text-emerald-200" />
         </Link>
@@ -60,80 +70,94 @@ function Index() {
           <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em]">
             Spending Envelopes
           </h2>
-          <button className="text-[11px] font-medium text-emerald-deep flex items-center gap-1">
+          <button
+            onClick={() => setNewOpen(true)}
+            className="text-[11px] font-medium text-emerald-deep flex items-center gap-1"
+          >
             <Plus className="size-3" /> New
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          {spending.map((e) => (
-            <Link
-              key={e.id}
-              to="/envelope/$id"
-              params={{ id: e.id }}
-              className="bg-white rounded-2xl ring-1 ring-black/5 p-4 h-40 flex flex-col justify-between relative overflow-hidden hover:ring-black/10 transition"
-            >
-              <div
-                className={`absolute top-0 left-0 right-0 h-1 ${colorClass[e.color].bar}`}
-              />
-              <div className="flex justify-between items-start">
+
+        {!loading && spending.length === 0 ? (
+          <button
+            onClick={() => setNewOpen(true)}
+            className="w-full bg-white rounded-2xl ring-1 ring-dashed ring-black/10 p-8 text-center text-sm text-zinc-500 hover:ring-black/20 transition"
+          >
+            No envelopes yet — create your first one
+          </button>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {spending.map((e) => (
+              <Link
+                key={e.id}
+                to="/envelope/$id"
+                params={{ id: e.id }}
+                className="bg-white rounded-2xl ring-1 ring-black/5 p-4 h-40 flex flex-col justify-between relative overflow-hidden hover:ring-black/10 transition"
+              >
                 <div
-                  className={`size-9 rounded-lg grid place-items-center text-xs font-semibold ${colorClass[e.color].letter}`}
-                >
-                  {e.letter}
-                </div>
-                {e.active && (
-                  <span className="text-[9px] font-semibold text-emerald-deep bg-emerald-soft px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Active
-                  </span>
-                )}
-                {e.balance === 0 && (
-                  <AlertTriangle className="size-4 text-warning" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-zinc-900">{e.name}</p>
-                <p className="text-lg font-medium text-naira mt-0.5">
-                  {naira(e.balance)}
-                </p>
-                <div className="mt-2 h-1 bg-zinc-100 rounded-full overflow-hidden">
+                  className={`absolute top-0 left-0 right-0 h-1 ${colorClass[e.color].bar}`}
+                />
+                <div className="flex justify-between items-start">
                   <div
-                    className={`h-full ${colorClass[e.color].bar}`}
-                    style={{
-                      width: `${Math.min(100, (e.balance / e.allocated) * 100)}%`,
-                    }}
-                  />
+                    className={`size-9 rounded-lg grid place-items-center text-xs font-semibold ${colorClass[e.color].letter}`}
+                  >
+                    {e.letter}
+                  </div>
+                  {e.active && (
+                    <span className="text-[9px] font-semibold text-emerald-deep bg-emerald-soft px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      Active
+                    </span>
+                  )}
+                  {e.balance === 0 && (
+                    <AlertTriangle className="size-4 text-warning" />
+                  )}
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                <div>
+                  <p className="text-sm font-medium text-zinc-900">{e.name}</p>
+                  <p className="text-lg font-medium text-naira mt-0.5">
+                    {naira(e.balance)}
+                  </p>
+                  <div className="mt-2 h-1 bg-zinc-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${colorClass[e.color].bar}`}
+                      style={{
+                        width: `${e.allocated > 0 ? Math.min(100, (e.balance / e.allocated) * 100) : 0}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
-      <section className="px-6 mt-10">
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em] mb-4">
-          Fixed Expenses
-        </h2>
-        <Link
-          to="/subscriptions"
-          className="flex items-center p-4 bg-white ring-1 ring-black/5 rounded-2xl hover:ring-black/10 transition"
-        >
-          <div
-            className={`size-10 rounded-lg grid place-items-center text-xs font-semibold ${colorClass[subsEnv.color].letter}`}
+      {subsEnv && (
+        <section className="px-6 mt-10">
+          <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em] mb-4">
+            Fixed Expenses
+          </h2>
+          <Link
+            to="/subscriptions"
+            className="flex items-center p-4 bg-white ring-1 ring-black/5 rounded-2xl hover:ring-black/10 transition"
           >
-            S
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium">Subscriptions envelope</p>
-            <p className="text-xs text-zinc-500">5 active · Auto-funds on the 1st</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium text-naira">
-              {naira(subsEnv.balance, { compact: true })}
-            </p>
-            <p className="text-[10px] text-zinc-400">Due in 4d</p>
-          </div>
-        </Link>
-      </section>
+            <div
+              className={`size-10 rounded-lg grid place-items-center text-xs font-semibold ${colorClass[subsEnv.color].letter}`}
+            >
+              {subsEnv.letter}
+            </div>
+            <div className="ml-4 flex-1">
+              <p className="text-sm font-medium">Subscriptions envelope</p>
+              <p className="text-xs text-zinc-500">Auto-funds on the 1st</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-medium text-naira">
+                {naira(subsEnv.balance, { compact: true })}
+              </p>
+            </div>
+          </Link>
+        </section>
+      )}
 
       <section className="px-6 mt-10 mb-10">
         <div className="flex items-end justify-between mb-4">
@@ -144,44 +168,51 @@ function Index() {
             See all
           </Link>
         </div>
-        <div className="space-y-3">
-          {goals.map((g) => {
-            const pct = Math.min(100, (g.balance / (g.target ?? 1)) * 100);
-            return (
-              <div
-                key={g.id}
-                className="bg-emerald-deep text-emerald-50 rounded-2xl p-5"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-[10px] text-emerald-200 uppercase tracking-[0.18em] font-medium">
-                      Goal · {g.deadline}
-                    </p>
-                    <h3 className="text-lg font-medium mt-1">{g.name}</h3>
+
+        {!loading && goals.length === 0 ? (
+          <p className="text-sm text-zinc-500">No goals yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {goals.map((g) => {
+              const pct = Math.min(100, (g.balance / (g.target ?? 1)) * 100);
+              return (
+                <div
+                  key={g.id}
+                  className="bg-emerald-deep text-emerald-50 rounded-2xl p-5"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-[10px] text-emerald-200 uppercase tracking-[0.18em] font-medium">
+                        Goal{g.deadline ? ` · ${g.deadline}` : ""}
+                      </p>
+                      <h3 className="text-lg font-medium mt-1">{g.name}</h3>
+                    </div>
+                    <span className="text-xs font-medium text-emerald-100 bg-white/10 px-2 py-1 rounded-full">
+                      {pct.toFixed(0)}%
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-emerald-100 bg-white/10 px-2 py-1 rounded-full">
-                    {pct.toFixed(0)}%
-                  </span>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
+                    <div
+                      className="h-full bg-emerald-300"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-emerald-200 text-naira">
+                      {naira(g.balance, { compact: true })} saved
+                    </span>
+                    <span className="text-emerald-100 text-naira">
+                      of {naira(g.target ?? 0, { compact: true })}
+                    </span>
+                  </div>
                 </div>
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
-                  <div
-                    className="h-full bg-emerald-300"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-emerald-200 text-naira">
-                    {naira(g.balance, { compact: true })} saved
-                  </span>
-                  <span className="text-emerald-100 text-naira">
-                    of {naira(g.target ?? 0, { compact: true })}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
+
+      <NewEnvelopeDialog open={newOpen} onOpenChange={setNewOpen} defaultType="spending" />
     </PhoneShell>
   );
 }
