@@ -92,6 +92,31 @@ export function useSetActiveEnvelope() {
     },
   });
 }
+export function useAllocateFromWallet() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (allocations: { envelopeId: string; amountNaira: number }[]) => {
+      const payload = allocations
+        .filter((a) => a.amountNaira > 0)
+        .map((a) => ({
+          envelope_id: a.envelopeId,
+          amount: Math.round(a.amountNaira * 100),
+        }));
+
+      const { error } = await supabase.rpc("allocate_from_wallet", {
+        p_allocations: payload,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["envelopes", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["wallet", user?.id] });
+    },
+  });
+}
+
 type CreateEnvelopeInput = {
   name: string;
   type: EnvelopeType;
