@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowLeft, Lock, Plus } from "lucide-react";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import { goals, naira } from "@/lib/swift-data";
+import { NewEnvelopeDialog } from "@/components/swift/NewEnvelopeDialog";
+import { naira } from "@/lib/swift-data";
+import { useEnvelopes } from "@/lib/hooks/use-envelopes";
 
 export const Route = createFileRoute("/goals")({
   component: Goals,
@@ -17,6 +20,10 @@ export const Route = createFileRoute("/goals")({
 });
 
 function Goals() {
+  const { data: envelopes, isLoading } = useEnvelopes();
+  const [newOpen, setNewOpen] = useState(false);
+  const goals = (envelopes ?? []).filter((e) => e.type === "goal");
+
   return (
     <PhoneShell>
       <div className="px-6 pt-12 pb-6 flex justify-between items-center">
@@ -26,12 +33,21 @@ function Goals() {
         <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em]">
           Goals
         </p>
-        <button className="text-zinc-600">
+        <button onClick={() => setNewOpen(true)} className="text-zinc-600">
           <Plus className="size-5" />
         </button>
       </div>
 
       <div className="px-6 mt-2 mb-10 space-y-4">
+        {!isLoading && goals.length === 0 && (
+          <button
+            onClick={() => setNewOpen(true)}
+            className="w-full bg-white rounded-2xl ring-1 ring-dashed ring-black/10 p-8 text-center text-sm text-zinc-500 hover:ring-black/20 transition"
+          >
+            No goals yet — create your first one
+          </button>
+        )}
+
         {goals.map((g) => {
           const pct = Math.min(100, (g.balance / (g.target ?? 1)) * 100);
           return (
@@ -39,7 +55,7 @@ function Goals() {
               <div className="flex justify-between items-start mb-1">
                 <div>
                   <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-[0.18em]">
-                    Target · {g.deadline}
+                    Target{g.deadline ? ` · ${g.deadline}` : ""}
                   </p>
                   <h3 className="text-lg font-medium mt-1">{g.name}</h3>
                 </div>
@@ -68,6 +84,8 @@ function Goals() {
           );
         })}
       </div>
+
+      <NewEnvelopeDialog open={newOpen} onOpenChange={setNewOpen} defaultType="goal" />
     </PhoneShell>
   );
 }
