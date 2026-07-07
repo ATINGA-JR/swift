@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Plus, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Plus, CheckCircle2, AlertTriangle } from "lucide-react";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import { naira, subTint, subscriptions } from "@/lib/swift-data";
+import { NewSubscriptionDialog } from "@/components/swift/NewSubscriptionDialog";
+import { naira } from "@/lib/swift-data";
+import { useSubscriptions } from "@/lib/hooks/use-subscriptions";
 
 export const Route = createFileRoute("/subscriptions")({
   component: Subs,
@@ -20,12 +23,15 @@ export const Route = createFileRoute("/subscriptions")({
 const statusChip = {
   funded: { label: "Funded", cls: "text-emerald-deep bg-emerald-soft", Icon: CheckCircle2 },
   low: { label: "Low funds", cls: "text-warning bg-warning-soft", Icon: AlertTriangle },
-  scheduled: { label: "Scheduled", cls: "text-zinc-600 bg-zinc-100", Icon: Clock },
   failed: { label: "Failed", cls: "text-red-700 bg-red-50", Icon: AlertTriangle },
 } as const;
 
 function Subs() {
-  const total = subscriptions.reduce((s, x) => s + x.amount, 0);
+  const { data, isLoading } = useSubscriptions();
+  const [newOpen, setNewOpen] = useState(false);
+  const subscriptions = data?.subscriptions ?? [];
+  const total = data?.totalMonthlyNaira ?? 0;
+
   return (
     <PhoneShell>
       <div className="px-6 pt-12 pb-6 flex justify-between items-center">
@@ -35,7 +41,7 @@ function Subs() {
         <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em]">
           Subscriptions
         </p>
-        <button className="text-zinc-600">
+        <button onClick={() => setNewOpen(true)} className="text-zinc-600">
           <Plus className="size-5" />
         </button>
       </div>
@@ -61,44 +67,56 @@ function Subs() {
         <h3 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em] mb-3">
           Upcoming
         </h3>
-        <ul className="space-y-3">
-          {subscriptions.map((s) => {
-            const st = statusChip[s.status];
-            const Icon = st.Icon;
-            return (
-              <li
-                key={s.id}
-                className="p-4 bg-white ring-1 ring-black/5 rounded-2xl flex items-center"
-              >
-                <div
-                  className={
-                    "size-10 rounded-lg grid place-items-center text-[13px] font-bold shrink-0 " +
-                    subTint[s.tint]
-                  }
+
+        {!isLoading && subscriptions.length === 0 ? (
+          <button
+            onClick={() => setNewOpen(true)}
+            className="w-full bg-white rounded-2xl ring-1 ring-dashed ring-black/10 p-8 text-center text-sm text-zinc-500 hover:ring-black/20 transition"
+          >
+            No subscriptions yet — add your first one
+          </button>
+        ) : (
+          <ul className="space-y-3">
+            {subscriptions.map((s) => {
+              const st = statusChip[s.status];
+              const Icon = st.Icon;
+              return (
+                <li
+                  key={s.id}
+                  className="p-4 bg-white ring-1 ring-black/5 rounded-2xl flex items-center"
                 >
-                  {s.letter}
-                </div>
-                <div className="ml-4 flex-1">
-                  <p className="text-sm font-medium">{s.name}</p>
-                  <p className="text-[11px] text-zinc-500">Next bill · {s.nextBill}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-naira">{naira(s.amount)}</p>
-                  <span
+                  <div
                     className={
-                      "inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full mt-1 " +
-                      st.cls
+                      "size-10 rounded-lg grid place-items-center text-[13px] font-bold shrink-0 " +
+                      s.tintClass
                     }
                   >
-                    <Icon className="size-2.5" />
-                    {st.label}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                    {s.letter}
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <p className="text-sm font-medium">{s.name}</p>
+                    <p className="text-[11px] text-zinc-500">Next bill · {s.nextBill}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-naira">{naira(s.amountNaira)}</p>
+                    <span
+                      className={
+                        "inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full mt-1 " +
+                        st.cls
+                      }
+                    >
+                      <Icon className="size-2.5" />
+                      {st.label}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
+
+      <NewSubscriptionDialog open={newOpen} onOpenChange={setNewOpen} />
     </PhoneShell>
   );
 }
