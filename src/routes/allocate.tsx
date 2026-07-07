@@ -2,9 +2,48 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import { colorClass, naira } from "@/lib/swift-data";
+import { colorClass, naira, type Envelope } from "@/lib/swift-data";
 import { useWallet } from "@/lib/hooks/use-wallet";
 import { useAllocateFromWallet, useEnvelopes } from "@/lib/hooks/use-envelopes";
+
+function EnvelopeRow({
+  envelope,
+  amount,
+  onChange,
+}: {
+  envelope: Envelope;
+  amount: number | "";
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="bg-white ring-1 ring-black/5 rounded-2xl p-4 flex items-center gap-3">
+      <div
+        className={
+          "size-10 rounded-lg grid place-items-center text-xs font-semibold " +
+          colorClass[envelope.color].letter
+        }
+      >
+        {envelope.letter}
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium">{envelope.name}</p>
+        <p className="text-[11px] text-zinc-500 text-naira">
+          Current {naira(envelope.balance)}
+        </p>
+      </div>
+      <div className="flex items-center gap-1 text-sm">
+        <span className="text-zinc-400">₦</span>
+        <input
+          inputMode="numeric"
+          placeholder="0"
+          value={amount}
+          onChange={(ev) => onChange(Number(ev.target.value.replace(/\D/g, "")) || 0)}
+          className="w-20 bg-transparent border-b border-zinc-200 focus:border-emerald-deep focus:outline-none text-right text-naira font-medium py-1"
+        />
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/allocate")({
   component: Allocate,
@@ -23,6 +62,8 @@ function Allocate() {
   const allocate = useAllocateFromWallet();
 
   const spending = (envelopes ?? []).filter((e) => e.type === "spending");
+  const goals = (envelopes ?? []).filter((e) => e.type === "goal");
+  const subs = (envelopes ?? []).filter((e) => e.type === "subscription");
   const assignedTotal = (envelopes ?? []).reduce((sum, e) => sum + e.balance, 0);
   const walletAvailable = Math.max(0, (wallet?.balanceNaira ?? 0) - assignedTotal);
 
@@ -77,48 +118,66 @@ function Allocate() {
         </div>
       </div>
 
-      <section className="px-6 mt-6 space-y-2 mb-6">
-        {!isLoading && spending.length === 0 && (
+      <section className="px-6 mt-6 mb-6">
+        {!isLoading && spending.length === 0 && goals.length === 0 && subs.length === 0 && (
           <p className="text-sm text-zinc-500 text-center py-8">
             No envelopes yet — create one from the dashboard first.
           </p>
         )}
-        {spending.map((e) => (
-          <div
-            key={e.id}
-            className="bg-white ring-1 ring-black/5 rounded-2xl p-4 flex items-center gap-3"
-          >
-            <div
-              className={
-                "size-10 rounded-lg grid place-items-center text-xs font-semibold " +
-                colorClass[e.color].letter
-              }
-            >
-              {e.letter}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{e.name}</p>
-              <p className="text-[11px] text-zinc-500 text-naira">
-                Current {naira(e.balance)}
-              </p>
-            </div>
-            <div className="flex items-center gap-1 text-sm">
-              <span className="text-zinc-400">₦</span>
-              <input
-                inputMode="numeric"
-                placeholder="0"
-                value={amounts[e.id] ?? ""}
-                onChange={(ev) =>
-                  setAmounts((a) => ({
-                    ...a,
-                    [e.id]: Number(ev.target.value.replace(/\D/g, "")) || 0,
-                  }))
-                }
-                className="w-20 bg-transparent border-b border-zinc-200 focus:border-emerald-deep focus:outline-none text-right text-naira font-medium py-1"
-              />
+
+        {spending.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.18em] mb-2">
+              Spending
+            </h3>
+            <div className="space-y-2">
+              {spending.map((e) => (
+                <EnvelopeRow
+                  key={e.id}
+                  envelope={e}
+                  amount={amounts[e.id] ?? ""}
+                  onChange={(v) => setAmounts((a) => ({ ...a, [e.id]: v }))}
+                />
+              ))}
             </div>
           </div>
-        ))}
+        )}
+
+        {goals.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.18em] mb-2">
+              Goals
+            </h3>
+            <div className="space-y-2">
+              {goals.map((e) => (
+                <EnvelopeRow
+                  key={e.id}
+                  envelope={e}
+                  amount={amounts[e.id] ?? ""}
+                  onChange={(v) => setAmounts((a) => ({ ...a, [e.id]: v }))}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {subs.length > 0 && (
+          <div>
+            <h3 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-[0.18em] mb-2">
+              Subscriptions
+            </h3>
+            <div className="space-y-2">
+              {subs.map((e) => (
+                <EnvelopeRow
+                  key={e.id}
+                  envelope={e}
+                  amount={amounts[e.id] ?? ""}
+                  onChange={(v) => setAmounts((a) => ({ ...a, [e.id]: v }))}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {error && (
