@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PhoneShell } from "@/components/swift/PhoneShell";
-import { colorClass, envelopes, naira, wallet } from "@/lib/swift-data";
+import { colorClass, naira } from "@/lib/swift-data";
+import { useWallet } from "@/lib/hooks/use-wallet";
+import { useAllocateFromWallet, useEnvelopes } from "@/lib/hooks/use-envelopes";
 
 export const Route = createFileRoute("/allocate")({
   component: Allocate,
@@ -15,10 +17,34 @@ export const Route = createFileRoute("/allocate")({
 });
 
 function Allocate() {
-  const spending = envelopes.filter((e) => e.type === "spending");
+  const navigate = useNavigate();
+  const { data: wallet } = useWallet();
+  const { data: envelopes, isLoading } = useEnvelopes();
+  const allocate = useAllocateFromWallet();
+
+  const spending = (envelopes ?? []).filter((e) => e.type === "spending");
+  const assignedTotal = (envelopes ?? []).reduce((sum, e) => sum + e.balance, 0);
+  const walletAvailable = Math.max(0, (wallet?.balanceNaira ?? 0) - assignedTotal);
+
   const [amounts, setAmounts] = useState<Record<string, number>>({});
+  const [error, setError] = useState<string | null>(null);
   const assigned = Object.values(amounts).reduce((s, x) => s + (x || 0), 0);
-  const remaining = wallet.available - assigned;
+  const remaining = walletAvailable - assigned;
+
+  async function handleAssign() {
+    setError(null);
+    try {
+      await allocate.mutateAsync(
+        Object.entries(amounts).map(([envelopeId, amountNaira]) => ({
+          envelopeId,
+          amountNaira,
+        })),
+      );
+      navigate({ to: "/" });
+    } catch {
+      setError("Couldn't complete that allocation — try again");
+    }
+  }
 
   return (
     <PhoneShell>
@@ -46,12 +72,17 @@ function Allocate() {
             {naira(remaining)}
           </h1>
           <p className="text-xs text-zinc-500 mt-2 text-naira">
-            of {naira(wallet.available)}
+            of {naira(walletAvailable)}
           </p>
         </div>
       </div>
 
       <section className="px-6 mt-6 space-y-2 mb-6">
+        {!isLoading && spending.length === 0 && (
+          <p className="text-sm text-zinc-500 text-center py-8">
+            No envelopes yet — create one from the dashboard first.
+          </p>
+        )}
         {spending.map((e) => (
           <div
             key={e.id}
@@ -90,12 +121,19 @@ function Allocate() {
         ))}
       </section>
 
+      {error && (
+        <p className="px-6 text-sm text-red-500 mb-4 text-center">{error}</p>
+      )}
+
       <div className="px-6 mb-8">
         <button
-          disabled={remaining < 0 || assigned === 0}
+          onClick={handleAssign}
+          disabled={remaining < 0 || assigned === 0 || allocate.isPending}
           className="w-full bg-emerald-deep hover:bg-emerald-mid disabled:opacity-40 disabled:hover:bg-emerald-deep transition text-emerald-50 py-4 rounded-xl text-sm font-medium"
         >
-          Assign {assigned > 0 ? naira(assigned) : ""} to envelopes
+          {allocate.isPending
+            ? "Assigning…"
+            : `Assign ${assigned > 0 ? naira(assigned) : ""} to envelopes`}
         </button>
       </div>
     </PhoneShell>
