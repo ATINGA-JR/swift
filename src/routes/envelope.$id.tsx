@@ -99,9 +99,12 @@ function EnvelopeDetail() {
             </>
           )}
         </button>
-        <button className="px-4 bg-white ring-1 ring-black/10 rounded-xl text-sm font-medium text-zinc-800">
+        <Link
+          to="/allocate"
+          className="px-4 bg-white ring-1 ring-black/10 rounded-xl text-sm font-medium text-zinc-800 flex items-center justify-center"
+        >
           <ArrowUpRight className="size-4" />
-        </button>
+        </Link>
       </div>
 
       <section className="px-6 mt-10 mb-10">
