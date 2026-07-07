@@ -60,6 +60,14 @@ function Subs() {
               {subscriptions.length} active
             </span>
           </div>
+          {subscriptions.length > 0 && (
+            <Link
+              to="/allocate"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-deep bg-emerald-50 px-3 py-1.5 rounded-full"
+            >
+              Add funds to this envelope
+            </Link>
+          )}
         </div>
       </div>
 
