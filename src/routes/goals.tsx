@@ -38,6 +38,17 @@ function Goals() {
         </button>
       </div>
 
+      {goals.length > 0 && (
+        <div className="px-6 mb-4">
+          <Link
+            to="/allocate"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-deep bg-emerald-soft px-3 py-1.5 rounded-full"
+          >
+            Add funds to a goal
+          </Link>
+        </div>
+      )}
+
       <div className="px-6 mt-2 mb-10 space-y-4">
         {!isLoading && goals.length === 0 && (
           <button
